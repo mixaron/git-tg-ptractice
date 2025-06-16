@@ -23,8 +23,6 @@ model Repository {
   name        String
   fullName    String           @unique
   githubUrl   String           @unique
-  chatId      BigInt
-  threadId    Int?
   webhookId   Int?
   createdAt   DateTime         @default(now())
   users       RepositoryUser[]

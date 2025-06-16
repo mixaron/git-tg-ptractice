@@ -1,2 +1,2 @@
 npx prisma migrate deploy
-npx ts-node src/server.ts
+npx ts-node src/server/server.ts

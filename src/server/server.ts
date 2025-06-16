@@ -1,5 +1,5 @@
 import express from "express";
-import webhookRouter from "./webhook";
+import webhookRouter from "../webhook";
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
