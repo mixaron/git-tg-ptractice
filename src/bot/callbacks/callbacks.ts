@@ -1,19 +1,15 @@
 import { InlineKeyboard } from "grammy";
 import { PrismaClient } from "@prisma/client";
 import { MyContext } from "../types/types";
-import { escapeMarkdownForAuthorLink, checkContextIds } from "../utils/utils"; // Убедитесь, что пути правильные
+import { escapeMarkdownForAuthorLink, checkContextIds } from "../utils/utils"; 
 
 const prisma = new PrismaClient();
 
-/**
- * Обрабатывает колбэк выбора репозитория для удаления.
- * Формирует и отправляет сообщение с подтверждением удаления.
- * @param ctx Контекст сообщения.
- */
-export async function handleDeleteRepoCallback(ctx: MyContext) {
-    await ctx.answerCallbackQuery(); // Отвечаем на колбэк, чтобы убрать "часики"
 
-    // Извлекаем repoId и threadId из callback_data
+export async function handleDeleteRepoCallback(ctx: MyContext) {
+    await ctx.answerCallbackQuery(); 
+
+    
     const repoId = parseInt(ctx.match![1]);
     const threadIdFromCallback = ctx.match![2] === 'null' ? null : parseInt(ctx.match![2]);
 
@@ -27,19 +23,19 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
             return ctx.reply("Репозиторий не найден.");
         }
 
-        // Формируем кнопки подтверждения/отмены, передавая repoId и threadId обратно
+        
         const confirmationKeyboard = new InlineKeyboard()
             .text("✅ Да, удалить", `confirm_delete_${repoId}_${threadIdFromCallback ?? 'null'}`)
             .text("❌ Нет, отмена", `cancel_delete_${repoId}_${threadIdFromCallback ?? 'null'}`);
 
-        // Формируем текст сообщения для подтверждения
+        
         let text = `Вы уверены, что хотите удалить репозиторий *${escapeMarkdownForAuthorLink(repoToDelete.fullName)}*`;
         if (threadIdFromCallback !== null) {
             text += ` (Тема: ${escapeMarkdownForAuthorLink(repoToDelete.name)})`;
         }
         text += '?';
 
-        // Пытаемся отредактировать сообщение. Обрабатываем ошибку, если сообщение не изменилось.
+        
         try {
             await ctx.editMessageText(text, {
                 reply_markup: confirmationKeyboard,
@@ -49,7 +45,7 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
             if (e.description?.includes("message is not modified")) {
                 console.warn("⚠️ editMessageText: сообщение не изменилось, ошибка проигнорирована.");
             } else {
-                throw e; // Пробрасываем другие ошибки редактирования сообщения
+                throw e; 
             }
         }
 
@@ -59,25 +55,21 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
     }
 }
 
-/**
- * Обрабатывает колбэк подтверждения удаления репозитория.
- * Выполняет удаление привязки, темы и, возможно, самого репозитория из БД.
- * @param ctx Контекст сообщения.
- */
+
 export async function handleConfirmDeleteCallback(ctx: MyContext) {
-    await ctx.answerCallbackQuery("Удаляем репозиторий..."); // Отвечаем на колбэк
+    await ctx.answerCallbackQuery("Удаляем репозиторий..."); 
     
-    // Извлекаем repoId и threadId из callback_data
+    
     const repoId = parseInt(ctx.match![1]);
     const threadIdFromCallback = ctx.match![2] === 'null' ? null : parseInt(ctx.match![2]);
 
-    const { userId, chatId } = checkContextIds(ctx); // Проверяем ID пользователя и чата
+    const { userId, chatId } = checkContextIds(ctx); 
 
     if (isNaN(repoId) || userId === null || chatId === null) {
-        return; // Возвращаемся, если данные невалидны
+        return; 
     }
 
-    let finalUserMessage = ""; // Строим итоговое сообщение для пользователя
+    let finalUserMessage = ""; 
 
     try {
         const user = await prisma.user.findUnique({ where: { telegramId: userId } });
@@ -86,7 +78,7 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
             return;
         }
 
-        // Находим привязку для удаления (используем repoId, chatId и threadIdFromCallback для точности)
+        
         const bindingToRemove = await prisma.chatBinding.findFirst({
             where: {
                 repositoryId: repoId,
@@ -94,12 +86,12 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
                 threadId: threadIdFromCallback,
             },
             include: {
-                repository: true // Включаем репозиторий для получения его полного имени
+                repository: true 
             }
         });
 
         if (!bindingToRemove) {
-            // Если привязка не найдена, возможно, она уже была удалена
+            
             const replyToMessageId = ctx.callbackQuery?.message?.message_id;
             await ctx.reply(
                 "Привязка репозитория к этому чату/теме не найдена или уже удалена.",
@@ -109,12 +101,12 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
         }
 
         const repoFullName = bindingToRemove.repository.fullName;
-        const repoName = bindingToRemove.repository.name; // Для названия темы
+        const repoName = bindingToRemove.repository.name; 
 
-        // 1. Удаляем конкретную привязку ChatBinding
-        // Поскольку @@unique([repositoryId, chatId]), мы удаляем единственную запись для этой пары.
-        // Добавление threadId в условие where тут необязательно, но помогает быть более точным,
-        // если в будущем схема изменится или если это поможет с отладкой.
+        
+        
+        
+        
         await prisma.chatBinding.deleteMany({
             where: {
                 repositoryId: repoId,
@@ -123,12 +115,12 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
             },
         });
 
-        // 2. Логика удаления темы форума (если это была тема)
-        if (threadIdFromCallback !== null) { // Если удаляемая привязка была к топику
-            // Проверяем, остались ли ещё привязки этого репозитория к этому же чату (в других топиках или в общем)
-            // C вашей текущей схемой `@@unique([repositoryId, chatId])`
-            // `remainingBindingsInThisChat` будет 0 после удаления единственной привязки для `(repoId, chatId)`
-            // Поэтому, если `threadIdFromCallback !== null`, тема должна быть удалена.
+        
+        if (threadIdFromCallback !== null) { 
+            
+            
+            
+            
             const remainingBindingsInThisChat = await prisma.chatBinding.count({
                 where: {
                     repositoryId: repoId,
@@ -151,18 +143,18 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
                     }
                 }
             } else {
-                // Этот блок кода с вашей текущей схемой `@@unique([repositoryId, chatId])` в ChatBinding
-                // не должен быть достигнут, так как `remainingBindingsInThisChat` всегда будет 0.
-                // Если он достигнут, это может указывать на проблему с вашей миграцией или уникальностью.
+                
+                
+                
                 finalUserMessage += `Привязка репозитория *${escapeMarkdownForAuthorLink(repoFullName)}* к этой теме удалена. Но тема не была удалена, так как репозиторий все еще отслеживается в других местах этого чата.\n`;
             }
         } else {
-            // Если привязка была к главному чату (threadIdFromCallback === null)
+            
             finalUserMessage += `✅ Привязка репозитория *${escapeMarkdownForAuthorLink(repoFullName)}* к основному чату удалена.\n`;
             finalUserMessage += `_Темы форума не удаляются, если привязка была к основному чату._\n`;
         }
 
-        // 3. Логика полного удаления репозитория из БД (если он нигде больше не отслеживается)
+        
         const totalRemainingChatBindingsForRepo = await prisma.chatBinding.count({
             where: {
                 repositoryId: repoId,
@@ -170,7 +162,7 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
         });
 
         if (totalRemainingChatBindingsForRepo === 0) {
-            // Если привязок к чатам не осталось совсем, удаляем все связанные записи и сам репозиторий
+            
             await prisma.repositoryUser.deleteMany({
                 where: { repositoryId: repoId }
             });
@@ -180,15 +172,15 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
             console.log(`Репозиторий ${repoFullName} (${repoId}) полностью удален из БД, так как не имеет активных привязок к чатам.`);
             finalUserMessage += `\n✅ Репозиторий *${escapeMarkdownForAuthorLink(repoFullName)}* полностью удален из системы.`;
         } else {
-            // Если репозиторий все еще привязан к другим чатам (не полное удаление)
-            // Добавляем сообщение, если оно еще не было добавлено в предыдущих шагах
+            
+            
             if (finalUserMessage === "") { 
                  finalUserMessage = `✅ Привязка репозитория *${escapeMarkdownForAuthorLink(repoFullName)}* удалена из этого чата.\n`;
             }
             finalUserMessage += `\n_Репозиторий *${escapeMarkdownForAuthorLink(repoFullName)}* все еще отслеживается в других чатах._`;
         }
 
-        // Отправляем итоговое сообщение пользователю
+        
         await ctx.editMessageText(finalUserMessage.trim(), { parse_mode: "Markdown" });
 
     } catch (e: any) {
@@ -197,14 +189,11 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
     }
 }
 
-/**
- * Обрабатывает колбэк отмены удаления репозитория.
- * @param ctx Контекст сообщения.
- */
-export async function handleCancelDeleteCallback(ctx: MyContext) {
-    await ctx.answerCallbackQuery("Удаление отменено."); // Отвечаем на колбэк
 
-    // Извлекаем repoId и threadId из callback_data
+export async function handleCancelDeleteCallback(ctx: MyContext) {
+    await ctx.answerCallbackQuery("Удаление отменено."); 
+
+    
     const repoId = parseInt(ctx.match![1]);
     const threadIdFromCallback = ctx.match![2] === 'null' ? null : parseInt(ctx.match![2]);
 
@@ -218,7 +207,7 @@ export async function handleCancelDeleteCallback(ctx: MyContext) {
             messageText += ` (Тема: ${escapeMarkdownForAuthorLink(repoName)})`;
         }
 
-        // Редактируем сообщение об отмене
+        
         await ctx.editMessageText(messageText, { parse_mode: "Markdown" });
     } catch (e) {
         console.error("Ошибка при отмене удаления:", e);

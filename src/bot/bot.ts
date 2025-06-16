@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { startWeeklyReportScheduler } from "../reports/startWeeklyReport";
 import { handleStartCommand, handleHelpCommand, handleAddRepoCommand, handleMyRepoCommand, handleDelRepoCommand, handleLinkGithubCommand, handleUnlinkGithubCommand, handleTextMessage } from "../bot/commands/commands";
 import { MyContext, SessionData } from "./types/types";
-import { handleSelectRepoToDelete, handleConfirmDeleteRepo, handleCancelDeleteRepo } from "./callbacks/callbacks";
+import { handleDeleteRepoCallback, handleConfirmDeleteCallback, handleCancelDeleteCallback } from "./callbacks/callbacks";
 
 config();
 startWeeklyReportScheduler();
@@ -28,8 +28,8 @@ bot.command("unlinkgithub", handleUnlinkGithubCommand);
 
 bot.on("message:text", handleTextMessage);
 
-bot.callbackQuery(/^select_to_delete_repo_(\d+)_(\d+|null)$/, handleSelectRepoToDelete);
-bot.callbackQuery(/^confirm_delete_(\d+)_(\d+|null)$/, handleConfirmDeleteRepo);
-bot.callbackQuery(/^cancel_delete_(\d+)_(\d+|null)$/, handleCancelDeleteRepo);
+bot.callbackQuery(/^select_to_delete_repo_(\d+)_(\d+|null)$/, handleDeleteRepoCallback);
+bot.callbackQuery(/^confirm_delete_(\d+)_(\d+|null)$/, handleConfirmDeleteCallback);
+bot.callbackQuery(/^cancel_delete_(\d+)_(\d+|null)$/, handleCancelDeleteCallback);
 
 bot.start();
