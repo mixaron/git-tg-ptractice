@@ -141,7 +141,7 @@ export async function handleUnlinkGithubCommand(ctx: MyContext) {
     return ctx.reply("✅ Ваш GitHub никнейм успешно отвязан.");
   } catch (e) {
     console.error("Ошибка отвязки GitHub никнейма:", e);
-    return ctx.reply("⚠️ Произошла ошибка при отвязке GitHub никнейма. Пожалуйста, попробуйте позже.");
+    return ctx.reply("Произошла ошибка при отвязке GitHub никнейма. Пожалуйста, попробуйте позже.");
   }
 }
 
@@ -190,9 +190,9 @@ export async function handleTextMessage(ctx: MyContext) {
     } catch (e: any) {
       console.error("Ошибка привязки GitHub никнейма:", e);
       if (e.message?.includes("Unique constraint failed")) {
-        return ctx.reply("⚠️ Этот никнейм GitHub уже привязан к другому аккаунту.");
+        return ctx.reply("Этот никнейм GitHub уже привязан к другому аккаунту.");
       }
-      return ctx.reply("⚠️ Произошла ошибка при привязке GitHub никнейма. Пожалуйста, попробуйте позже.");
+      return ctx.reply("Произошла ошибка при привязке GitHub никнейма. Пожалуйста, попробуйте позже.");
     }
   }
 
@@ -255,7 +255,7 @@ export async function handleTextMessage(ctx: MyContext) {
               }
             } catch (topicError: any) {
               console.warn("Не удалось создать топик форума:", topicError.message);
-              await ctx.reply("⚠️ Не удалось создать отдельный топик форума для репозитория. Отслеживание будет вестись в текущем чате.");
+              await ctx.reply("Не удалось создать отдельный топик форума для репозитория. Отслеживание будет вестись в текущем чате.");
               finalThreadId = null;
             }
           }
@@ -293,12 +293,12 @@ export async function handleTextMessage(ctx: MyContext) {
       console.error("Ошибка добавления репозитория:", error);
       if (error.code === 'P2002' && error.meta?.target) {
         if (Array.isArray(error.meta.target) && error.meta.target.includes('repositoryId') && error.meta.target.includes('chatId')) {
-          await ctx.reply("⚠️ Репозиторий уже добавлен в этот чат (и тему, если применимо).");
+          await ctx.reply("Репозиторий уже добавлен в этот чат (и тему, если применимо).");
         } else {
-          await ctx.reply(`⚠️ Произошла ошибка с уникальным ограничением: ${error.message}`);
+          await ctx.reply(`Произошла ошибка с уникальным ограничением: ${error.message}`);
         }
       } else {
-        await ctx.reply("⚠️ Не удалось добавить репозиторий. Пожалуйста, попробуйте позже.");
+        await ctx.reply("Не удалось добавить репозиторий. Пожалуйста, попробуйте позже.");
       }
     }
   } else {

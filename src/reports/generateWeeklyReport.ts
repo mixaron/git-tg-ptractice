@@ -74,7 +74,7 @@ export async function generateWeeklyReport(): Promise<void> {
           }
         );
       } catch (error) {
-        console.error(`❌ Ошибка отправки отчета в чат ${binding.chatId} (${repo.name}):`, error);
+        console.error(`Ошибка отправки отчета в чат ${binding.chatId} (${repo.name}):`, error);
       }
     }
 

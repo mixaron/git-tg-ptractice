@@ -8,7 +8,7 @@ export async function sendCommitMessages(
 ) {
   for (const msg of messages) {
     try {
-      console.log(`📤 Отправка в чат ${chatId}, поток ${threadId}`);
+      console.log(`Отправка в чат ${chatId}, поток ${threadId}`);
       await bot.api.sendMessage(Number(chatId), msg, {
         parse_mode: "MarkdownV2",
         message_thread_id: threadId ? Number(threadId) : undefined,

@@ -14,7 +14,7 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
     const threadIdFromCallback = ctx.match![2] === 'null' ? null : parseInt(ctx.match![2]);
 
     if (isNaN(repoId)) {
-        return ctx.reply("⚠️ Ошибка: неверный ID репозитория.");
+        return ctx.reply("Ошибка: неверный ID репозитория.");
     }
 
     try {
@@ -43,7 +43,7 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
             });
         } catch (e: any) {
             if (e.description?.includes("message is not modified")) {
-                console.warn("⚠️ editMessageText: сообщение не изменилось, ошибка проигнорирована.");
+                console.warn(" editMessageText: сообщение не изменилось, ошибка проигнорирована.");
             } else {
                 throw e; 
             }
@@ -51,7 +51,7 @@ export async function handleDeleteRepoCallback(ctx: MyContext) {
 
     } catch (e) {
         console.error("Ошибка при подготовке к удалению:", e);
-        await ctx.reply("⚠️ Произошла ошибка при подготовке к удалению.");
+        await ctx.reply(" Произошла ошибка при подготовке к удалению.");
     }
 }
 
@@ -135,11 +135,11 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
                 } catch (topicDeleteError: any) {
                     console.error(`Ошибка при удалении темы ${threadIdFromCallback} для репозитория ${repoId} в чате ${chatId}:`, topicDeleteError);
                     if (topicDeleteError.description?.includes('not enough rights to manage topics')) {
-                        finalUserMessage += "⚠️ Не удалось удалить тему форума: у бота недостаточно прав. Пожалуйста, выдайте боту разрешение 'Управлять темами'.\n";
+                        finalUserMessage += " Не удалось удалить тему форума: у бота недостаточно прав. Пожалуйста, выдайте боту разрешение 'Управлять темами'.\n";
                     } else if (topicDeleteError.description?.includes('thread not found')) {
-                        finalUserMessage += "⚠️ Не удалось удалить тему форума: тема не найдена. Возможно, она уже удалена.\n";
+                        finalUserMessage += " Не удалось удалить тему форума: тема не найдена. Возможно, она уже удалена.\n";
                     } else {
-                        finalUserMessage += "⚠️ Не удалось удалить соответствующую тему форума. Пожалуйста, проверьте логи бота.\n";
+                        finalUserMessage += " Не удалось удалить соответствующую тему форума. Пожалуйста, проверьте логи бота.\n";
                     }
                 }
             } else {
@@ -150,7 +150,7 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
             }
         } else {
             
-            finalUserMessage += `✅ Привязка репозитория *${escapeMarkdownForAuthorLink(repoFullName)}* к основному чату удалена.\n`;
+            finalUserMessage += ` Привязка репозитория *${escapeMarkdownForAuthorLink(repoFullName)}* к основному чату удалена.\n`;
             finalUserMessage += `_Темы форума не удаляются, если привязка была к основному чату._\n`;
         }
 
@@ -185,7 +185,7 @@ export async function handleConfirmDeleteCallback(ctx: MyContext) {
 
     } catch (e: any) {
         console.error("Ошибка при удалении репозитория:", e);
-        await ctx.reply("⚠️ Не удалось удалить репозиторий. Пожалуйста, попробуйте позже.");
+        await ctx.reply(" Не удалось удалить репозиторий. Пожалуйста, попробуйте позже.");
     }
 }
 
@@ -211,6 +211,6 @@ export async function handleCancelDeleteCallback(ctx: MyContext) {
         await ctx.editMessageText(messageText, { parse_mode: "Markdown" });
     } catch (e) {
         console.error("Ошибка при отмене удаления:", e);
-        await ctx.reply("⚠️ Ошибка при отмене.");
+        await ctx.reply(" Ошибка при отмене.");
     }
 }
